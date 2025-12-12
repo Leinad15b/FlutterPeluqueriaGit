@@ -3,6 +3,7 @@ import 'service_detail_page.dart';
 import 'home_tab_page.dart';
 import '../models/api_service.dart';
 import '../models/api_models.dart';
+import 'package:peluqueria_aplication/widgets/floating_ai_button.dart';
 
 class FavoritesPage extends StatefulWidget {
   final String userName;
@@ -85,6 +86,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           );
         },
       ),
+      floatingActionButton: FloatingAiButton(),
     );
   }
 }
