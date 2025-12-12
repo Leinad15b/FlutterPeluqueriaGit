@@ -1,9 +1,10 @@
-import 'dart:convert'; 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'service_detail_page.dart';
 import '../models/api_service.dart';
 import '../models/api_models.dart';
 import '../widgets/user_avatar.dart';
+import 'package:peluqueria_aplication/widgets/floating_ai_button.dart';
 
 enum SortOption { none, priceAsc, priceDesc, likesDesc }
 
@@ -69,6 +70,7 @@ class _HomeTabPageState extends State<HomeTabPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
+      floatingActionButton: FloatingAiButton(),
       body: SafeArea(
         child: Column(
           children: [
@@ -299,7 +301,6 @@ class _ServiceCardState extends State<ServiceCard> {
 
   @override
   Widget build(BuildContext context) {
-
     Widget imageWidget;
     if (widget.service.imageBase64 != null &&
         widget.service.imageBase64!.isNotEmpty) {
@@ -350,7 +351,7 @@ class _ServiceCardState extends State<ServiceCard> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: imageWidget, 
+              child: imageWidget,
             ),
             SizedBox(width: 15),
             Expanded(

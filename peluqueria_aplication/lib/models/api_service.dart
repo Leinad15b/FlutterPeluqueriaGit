@@ -6,7 +6,7 @@ import '../models/api_models.dart';
 
 class ApiService {
   // Recuerda: 10.0.2.2 para emulador, tu IP local para móvil físico
-  static const String baseUrl = 'http://192.168.1.144:8081/api';
+  static const String baseUrl = 'http://10.0.2.2:8081/api';
 
   static Future<Map<String, String>> _getHeaders(
       {bool withToken = true}) async {
@@ -21,7 +21,6 @@ class ApiService {
     return headers;
   }
 
-  
   static Future<bool> login(String username, String password) async {
     final url = Uri.parse('$baseUrl/auth/signin');
     try {
@@ -40,7 +39,7 @@ class ApiService {
         return true;
       }
       return false;
-    } catch (e) {
+    } catch (e) {+
       print("Error Login: $e");
       return false;
     }
@@ -71,7 +70,6 @@ class ApiService {
     await prefs.clear();
   }
 
-
   static Future<List<ServiceModel>> getServices() async {
     final url = Uri.parse('$baseUrl/servicios');
     try {
@@ -97,10 +95,9 @@ class ApiService {
     }
   }
 
-
   static Future<UserProfile?> getUserProfile(String username) async {
     final prefs = await SharedPreferences.getInstance();
- 
+
     final url = Uri.parse('$baseUrl/usuarios/buscar?username=$username');
 
     try {
@@ -115,10 +112,8 @@ class ApiService {
     return null;
   }
 
-
   static Future<bool> updateProfile(
       String username, UserProfile updatedProfile) async {
-    
     final url = Uri.parse('$baseUrl/usuarios/${updatedProfile.id}');
 
     try {
