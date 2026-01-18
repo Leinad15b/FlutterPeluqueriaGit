@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
+import 'main_nav_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,20 +15,30 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-
-    Timer(Duration(seconds: 3), () {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-      print("Splash terminada. (Login está comentado)");
-    });
+    _checkAuth();
   }
 
-  @override
-  void dispose() {
+  void _checkAuth() async {
+    await Future.delayed(Duration(seconds: 3));
+    if (!mounted) return;
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final isLoggedIn = await auth.checkSession();
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    super.dispose();
+
+    if (isLoggedIn && auth.username != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainNavigationScreen(userName: auth.username!)),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
   }
 
   @override
@@ -33,15 +47,25 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue.shade300, Colors.blue.shade600],
+            colors: [Colors.orange.shade600, Colors.yellow.shade400],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(80.0),
-            child: Image.asset('assets/images/logo.jpeg'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.content_cut, size: 80, color: Colors.white),
+              SizedBox(height: 20),
+              Text("PELUQUERÍA APP",
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
+              SizedBox(height: 20),
+              CircularProgressIndicator(color: Colors.white)
+            ],
           ),
         ),
       ),
