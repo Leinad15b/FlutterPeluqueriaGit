@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/api_models.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final String baseUrl = 'http://192.168.1.144:8081/api'; 
+  final String baseUrl = 'http://192.168.1.144:8080/api'; 
   final _storage = const FlutterSecureStorage();
 
   bool _isLoading = false;
@@ -15,10 +15,14 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get token => _token;
   String? get username => _username;
+  int? _userId;
+  int? get userId => _userId;
 
   Future<bool> checkSession() async {
     _token = await _storage.read(key: 'jwt_token');
     _username = await _storage.read(key: 'username');
+    final idStr = await _storage.read(key: 'user_id');
+    _userId = idStr != null ? int.tryParse(idStr) : null;
 
     if (_token != null && _username != null) {
       notifyListeners();
@@ -43,9 +47,11 @@ class AuthProvider extends ChangeNotifier {
         final data = jsonDecode(response.body);
         _token = data['accessToken'];
         _username = data['username'];
+        _userId = data['id'];
 
         await _storage.write(key: 'jwt_token', value: _token);
         await _storage.write(key: 'username', value: _username);
+        await _storage.write(key: 'user_id', value: _userId.toString());
         
         _isLoading = false;
         notifyListeners();
@@ -88,6 +94,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     _token = null;
     _username = null;
+    _userId = null;
     await _storage.deleteAll();
     notifyListeners();
   }

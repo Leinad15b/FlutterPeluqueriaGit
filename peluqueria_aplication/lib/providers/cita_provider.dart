@@ -41,15 +41,22 @@ class CitaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map<String, dynamic>> reservarCita(int servicioId, DateTime fecha, String horaInicio) async {
+  Future<Map<String, dynamic>> reservarCita(int servicioId, DateTime fecha, SlotDTO slot) async {
     _isLoading = true;
     notifyListeners();
 
+    // Use the bloqueHorarioId from the slot returned by the availability endpoint.
+    // If it's null (old backend without the field), fall back to deriving from date.
+    final int bloqueId = slot.bloqueHorarioId ?? _getBloqueIdFromDate(fecha);
+
     final body = {
-      "bloqueHorarioId": 1, 
+      "servicioId": servicioId,
+      "bloqueHorarioId": bloqueId,
       "fecha": "${fecha.year}-${fecha.month.toString().padLeft(2, '0')}-${fecha.day.toString().padLeft(2, '0')}",
-      "horaInicio": horaInicio 
+      "horaInicio": slot.start,
     };
+
+    print("Reservando cita: $body");
 
     final url = Uri.parse('${authProvider.baseUrl}/citas/reservar');
 
@@ -59,17 +66,29 @@ class CitaProvider extends ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
-      
+
       if (response.statusCode == 200) {
         return {"success": true, "msg": "Cita reservada"};
       } else {
-        return {"success": false, "msg": response.body};
+        // Try to parse error message from backend
+        String errorMsg = response.body;
+        try {
+          final decoded = jsonDecode(response.body);
+          errorMsg = decoded['error'] ?? decoded['message'] ?? decoded['msg'] ?? response.body;
+        } catch (_) {}
+        print("Error reservar: ${response.statusCode} - $errorMsg");
+        return {"success": false, "msg": errorMsg};
       }
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return {"success": false, "msg": "Error de conexión"};
+      return {"success": false, "msg": "Error de conexión: $e"};
     }
+  }
+
+  /// Fallback: derive a block ID from day of week (1=Mon ... 7=Sun)
+  int _getBloqueIdFromDate(DateTime fecha) {
+    return fecha.weekday; // weekday: 1=Monday, 7=Sunday
   }
 
   Future<void> fetchMisCitas() async {

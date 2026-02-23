@@ -3,6 +3,7 @@ import 'home_tab_page.dart';
 import 'favorites_page.dart';
 import 'profile_page.dart';
 import '../models/user_manager.dart';
+import '../l10n/app_strings.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final String userName;
@@ -38,11 +39,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Scaffold(
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.favorite), label: 'Favoritos'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: const Icon(Icons.home), label: AppStrings.watch(context, 'nav_home')),
+          BottomNavigationBarItem(icon: const Icon(Icons.favorite), label: AppStrings.watch(context, 'nav_favorites')),
+          BottomNavigationBarItem(icon: const Icon(Icons.person), label: AppStrings.watch(context, 'nav_profile')),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.orange.shade800,

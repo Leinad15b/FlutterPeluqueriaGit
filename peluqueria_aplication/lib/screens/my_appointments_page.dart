@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cita_provider.dart';
+import '../l10n/app_strings.dart';
 import 'appointment_detail_page.dart';
 
 class MyAppointmentsPage extends StatefulWidget {
@@ -20,12 +21,12 @@ class _MyAppointmentsPageState extends State<MyAppointmentsPage> {
     final citaProvider = Provider.of<CitaProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Mis Citas"), backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0),
+      appBar: AppBar(title: Text(AppStrings.watch(context, 'appts_title')), backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0),
       backgroundColor: Colors.grey[100],
       body: citaProvider.isLoading
           ? Center(child: CircularProgressIndicator())
           : citaProvider.misCitas.isEmpty
-              ? Center(child: Text("No tienes citas reservadas"))
+              ? Center(child: Text(AppStrings.watch(context, 'appts_none')))
               : RefreshIndicator(
                   onRefresh: () => citaProvider.fetchMisCitas(),
                   child: ListView.builder(

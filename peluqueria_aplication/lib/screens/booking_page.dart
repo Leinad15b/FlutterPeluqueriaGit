@@ -4,6 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import '../models/api_models.dart';
 import '../providers/cita_provider.dart';
+import '../l10n/app_strings.dart';
 
 class ReservarCitaScreen extends StatefulWidget {
   final ServiceModel service;
@@ -39,7 +40,7 @@ class _ReservarCitaScreenState extends State<ReservarCitaScreen> {
 
   void _confirmarCita() async {
     if (_selectedSlot == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selecciona un horario"), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.get(context, 'book_select_slot')), backgroundColor: Colors.red));
       return;
     }
     if (_selectedDay.isBefore(DateTime(_today.year, _today.month, _today.day))) {
@@ -51,19 +52,19 @@ class _ReservarCitaScreenState extends State<ReservarCitaScreen> {
     final result = await citaProvider.reservarCita(
       widget.service.id,
       _selectedDay,
-      _selectedSlot!.start,
+      _selectedSlot!,
     );
 
     if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("¡Cita reservada con éxito!"), backgroundColor: Colors.green));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.get(context, 'book_success')), backgroundColor: Colors.green));
       Navigator.pop(context);
     } else {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text("Error"),
+          title: Text(AppStrings.get(ctx, 'error')),
           content: Text(result['msg'] ?? "Error desconocido"),
-          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text("OK"))],
+          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppStrings.get(ctx, 'accept')))],
         ),
       );
     }
@@ -113,7 +114,7 @@ class _ReservarCitaScreenState extends State<ReservarCitaScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Horarios Disponibles", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(AppStrings.watch(context, 'book_available'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   if (citaProvider.isLoading) SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 ],
               ),
@@ -165,7 +166,7 @@ class _ReservarCitaScreenState extends State<ReservarCitaScreen> {
                 child: ElevatedButton(
                   onPressed: citaProvider.isLoading ? null : _confirmarCita,
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  child: Text("Confirmar cita", style: TextStyle(color: Colors.white, fontSize: 16)),
+                  child: Text(AppStrings.watch(context, 'book_confirm'), style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
               ),
             )

@@ -46,7 +46,8 @@ class UserProfile {
       telefono: json['telefono'] ?? "",
       alergenos: json['alergenos'] ?? "",
       afecciones: json['afecciones'] ?? "",
-      fotoBase64: json['fotoBase64'],
+      // Backend may return 'fotoBase64' or 'foto_base64'
+      fotoBase64: json['fotoBase64'] ?? json['foto_base64'],
     );
   }
 }
@@ -98,15 +99,16 @@ class SlotDTO {
   final String start;
   final String end;
   final bool available;
+  final int? bloqueHorarioId;
 
-  SlotDTO({required this.start, required this.end, required this.available});
+  SlotDTO({required this.start, required this.end, required this.available, this.bloqueHorarioId});
 
   factory SlotDTO.fromJson(Map<String, dynamic> json) {
     return SlotDTO(
-     
-      start: json['horaInicio'] ?? "00:00", 
+      start: json['horaInicio'] ?? "00:00",
       end: json['horaFin'] ?? "00:00",
       available: json['disponible'] ?? false,
+      bloqueHorarioId: json['bloqueHorarioId'],
     );
   }
 }
@@ -114,6 +116,7 @@ class SlotDTO {
 class Cita {
   final int id;
   final String servicioNombre;
+  final int? servicioId;   // needed for valoracion request
   final String fecha;
   final String horaInicio;
   final String estado;
@@ -121,6 +124,7 @@ class Cita {
   Cita({
     required this.id,
     required this.servicioNombre,
+    this.servicioId,
     required this.fecha,
     required this.horaInicio,
     required this.estado,
@@ -128,19 +132,82 @@ class Cita {
 
   factory Cita.fromJson(Map<String, dynamic> json) {
     String nombreServicio = "Servicio";
+    int? servId;
 
     if (json['servicio'] != null && json['servicio'] is Map) {
       nombreServicio = json['servicio']['nombre'] ?? "Servicio";
+      servId = json['servicio']['id'];
     } else if (json['servicioNombre'] != null) {
-        nombreServicio = json['servicioNombre'];
+      nombreServicio = json['servicioNombre'];
     }
+    // also try flat field
+    servId ??= json['servicioId'];
 
     return Cita(
       id: json['id'],
       servicioNombre: nombreServicio,
+      servicioId: servId,
       fecha: json['fecha'] ?? "",
       horaInicio: json['horaInicio'] ?? "",
       estado: json['estado'] ?? "PENDIENTE",
     );
+  }
+}
+
+class Valoracion {
+  final int id;
+  final int citaId;
+  final String comentario;
+  final int calificacion;
+  final String? imagenBase64;
+  final String fecha;
+
+  Valoracion({
+    required this.id,
+    required this.citaId,
+    required this.comentario,
+    required this.calificacion,
+    this.imagenBase64,
+    required this.fecha,
+  });
+
+  factory Valoracion.fromJson(Map<String, dynamic> json) {
+    return Valoracion(
+      id: json['id'] ?? 0,
+      citaId: json['cita']?['id'] ?? json['citaId'] ?? 0,
+      comentario: json['comentario'] ?? "",
+      calificacion: json['calificacion'] ?? 0,
+      imagenBase64: json['imagenBase64'],
+      fecha: json['fecha'] ?? "",
+    );
+  }
+}
+
+class ValoracionRequest {
+  final int citaId;
+  final int calificacion;
+  final String comentario;
+  final String? imagenBase64;
+  final int? usuarioId;
+  final int? servicioId;
+
+  ValoracionRequest({
+    required this.citaId,
+    required this.calificacion,
+    required this.comentario,
+    this.imagenBase64,
+    this.usuarioId,
+    this.servicioId,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "citaId": citaId,
+      if (usuarioId != null) "usuarioId": usuarioId,
+      if (servicioId != null) "servicioId": servicioId,
+      "calificacion": calificacion,
+      "comentario": comentario,
+      if (imagenBase64 != null) "imagenBase64": imagenBase64,
+    };
   }
 }

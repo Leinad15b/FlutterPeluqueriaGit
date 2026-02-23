@@ -1,10 +1,12 @@
 import 'dart:convert'; 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'service_detail_page.dart';
 import '../models/api_service.dart';
 import '../models/api_models.dart';
-import 'profile_page.dart'; // Importa para navegar al perfil
-import '../widgets/user_avatar.dart'; // Asegúrate de que este import existe
+import 'profile_page.dart';
+import '../widgets/user_avatar.dart';
+import '../l10n/app_strings.dart';
 
 enum SortOption { none, priceAsc, priceDesc, likesDesc }
 
@@ -17,7 +19,7 @@ class HomeTabPage extends StatefulWidget {
 }
 
 class _HomeTabPageState extends State<HomeTabPage> {
-  String _selectedFilter = "Todos";
+  String _selectedFilter = "";
   final _searchController = TextEditingController();
   String _searchQuery = "";
   SortOption _sortOption = SortOption.none;
@@ -38,8 +40,11 @@ class _HomeTabPageState extends State<HomeTabPage> {
   List<ServiceModel> _applyFilters(List<ServiceModel> services) {
     List<ServiceModel> filteredList = services;
 
-    if (_selectedFilter != "Todos") {
-      filteredList = filteredList.where((s) => s.categoria == _selectedFilter).toList();
+    // Empty string means 'All' — no category filter
+    if (_selectedFilter.isNotEmpty) {
+      filteredList = filteredList
+          .where((s) => s.categoria.toLowerCase() == _selectedFilter.toLowerCase())
+          .toList();
     }
 
     if (_searchQuery.isNotEmpty) {
@@ -88,7 +93,7 @@ class _HomeTabPageState extends State<HomeTabPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Bienvenido,", style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+      Text(AppStrings.watch(context, 'welcome'), style: TextStyle(fontSize: 16, color: Colors.grey[600])),
               SizedBox(height: 4),
               
               Text(widget.userName.split('@')[0], style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
@@ -118,7 +123,7 @@ class _HomeTabPageState extends State<HomeTabPage> {
               controller: _searchController,
               onChanged: (value) => setState(() => _searchQuery = value),
               decoration: InputDecoration(
-                hintText: "Buscar servicio...",
+              hintText: AppStrings.watch(context, 'search'),
                 prefixIcon: Icon(Icons.search, color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
@@ -141,29 +146,32 @@ class _HomeTabPageState extends State<HomeTabPage> {
         icon: Icon(Icons.sort, color: Colors.white),
         onSelected: (SortOption result) => setState(() => _sortOption = result),
         itemBuilder: (BuildContext context) => <PopupMenuEntry<SortOption>>[
-          const PopupMenuItem(value: SortOption.none, child: Text('Por defecto')),
-          const PopupMenuItem(value: SortOption.priceAsc, child: Text('Precio: Menor a Mayor')),
-          const PopupMenuItem(value: SortOption.priceDesc, child: Text('Precio: Mayor a Menor')),
-          const PopupMenuItem(value: SortOption.likesDesc, child: Text('Más populares')),
+          PopupMenuItem(value: SortOption.none, child: Text(AppStrings.get(context, 'sort_default'))),
+          PopupMenuItem(value: SortOption.priceAsc, child: Text(AppStrings.get(context, 'sort_price_asc'))),
+          PopupMenuItem(value: SortOption.priceDesc, child: Text(AppStrings.get(context, 'sort_price_desc'))),
+          PopupMenuItem(value: SortOption.likesDesc, child: Text(AppStrings.get(context, 'sort_popular'))),
         ],
       ),
     );
   }
 
   Widget _buildCategoryFilter() {
-    final categories = ["Todos", "Corte", "Peinado", "Tinte", "Barba", "Tratamiento"];
+    // Internal values: '' = All, others = real categories from backend
+    final categoryValues = ["", "Corte", "Peinado", "Tinte", "Barba", "Tratamiento"];
+    final categoryLabels = [AppStrings.watch(context, 'cat_all'), "Corte", "Peinado", "Tinte", "Barba", "Tratamiento"];
     return Container(
       height: 50,
       margin: EdgeInsets.symmetric(vertical: 20),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 20),
-        itemCount: categories.length,
+        itemCount: categoryValues.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = _selectedFilter == category;
+          final value = categoryValues[index];
+          final label = categoryLabels[index];
+          final isSelected = _selectedFilter == value;
           return GestureDetector(
-            onTap: () => setState(() => _selectedFilter = category),
+            onTap: () => setState(() => _selectedFilter = value),
             child: Container(
               margin: EdgeInsets.only(right: 10),
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -173,7 +181,7 @@ class _HomeTabPageState extends State<HomeTabPage> {
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: Center(
-                child: Text(category, style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                child: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
               ),
             ),
           );
@@ -187,8 +195,8 @@ class _HomeTabPageState extends State<HomeTabPage> {
       future: _servicesFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) return Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return Center(child: Text("Error al cargar servicios"));
-        if (!snapshot.hasData || snapshot.data!.isEmpty) return Center(child: Text("No hay servicios disponibles"));
+        if (snapshot.hasError) return Center(child: Text(AppStrings.watch(context, 'error_loading')));
+        if (!snapshot.hasData || snapshot.data!.isEmpty) return Center(child: Text(AppStrings.watch(context, 'no_services')));
 
         final filteredServices = _applyFilters(snapshot.data!);
 

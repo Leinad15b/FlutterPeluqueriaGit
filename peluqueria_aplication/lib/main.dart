@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'providers/auth_provider.dart';
 import 'providers/cita_provider.dart';
+import 'providers/locale_provider.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
@@ -24,16 +25,20 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProxyProvider<AuthProvider, CitaProvider>(
           create: (context) => CitaProvider(Provider.of<AuthProvider>(context, listen: false)),
           update: (context, auth, previous) => CitaProvider(auth),
         ),
       ],
-      child: MaterialApp(
-        title: 'App Peluquería',
-        theme: ThemeData(primarySwatch: Colors.orange),
-        debugShowCheckedModeBanner: false,
-        home: SplashScreen(),
+      child: Consumer<LocaleProvider>(
+        builder: (context, localeProvider, _) => MaterialApp(
+          title: 'App Peluquería',
+          locale: localeProvider.locale,
+          theme: ThemeData(primarySwatch: Colors.orange),
+          debugShowCheckedModeBanner: false,
+          home: SplashScreen(),
+        ),
       ),
     );
   }

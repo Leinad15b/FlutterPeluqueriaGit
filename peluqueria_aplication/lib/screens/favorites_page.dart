@@ -3,6 +3,7 @@ import 'service_detail_page.dart';
 import 'home_tab_page.dart';
 import '../models/api_service.dart';
 import '../models/api_models.dart';
+import '../l10n/app_strings.dart';
 
 class FavoritesPage extends StatefulWidget {
   final String userName;
@@ -34,7 +35,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text("Mis Favoritos", style: TextStyle(color: Colors.black)),
+        title: Text(AppStrings.watch(context, 'fav_title'), style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -54,7 +55,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 children: [
                   Icon(Icons.favorite_border, size: 60, color: Colors.grey),
                   SizedBox(height: 10),
-                  Text("No tienes favoritos aún",
+                  Text(AppStrings.watch(context, 'fav_none'),
                       style: TextStyle(color: Colors.grey[600], fontSize: 16))
                 ],
               ),

@@ -65,21 +65,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return TextField(
       controller: controller,
       obscureText: isPassword,
-      style: TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.white),
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white70),
+        labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide(color: Colors.white70),
+          borderSide: const BorderSide(color: Colors.white),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide(color: Colors.white),
+          borderSide: const BorderSide(color: Colors.white, width: 2.0),
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
+        fillColor: Colors.white.withOpacity(0.15),
       ),
     );
   }

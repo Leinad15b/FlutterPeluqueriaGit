@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/api_models.dart';
 
 class ApiService {
   // Ajusta tu IP: 10.0.2.2 (emulador) o IP local (móvil físico)
-  static const String baseUrl = 'http://192.168.1.144:8081/api';
+  static const String baseUrl = 'http://192.168.1.144:8080/api';
   static const _storage = FlutterSecureStorage();
 
   static Future<Map<String, String>> _getHeaders({bool withToken = true}) async {
@@ -55,9 +56,18 @@ class ApiService {
 
 
   static Future<UserProfile?> getUserProfile(String username) async {
-    final url = Uri.parse('$baseUrl/usuarios/buscar?username=$username');
+    // Read stored userId - the backend has no buscar endpoint, uses /{id}
+    final idStr = await _storage.read(key: 'user_id');
+    if (idStr == null || idStr == 'null') {
+      print("⚠️ No hay user_id almacenado, no se puede cargar el perfil");
+      return null;
+    }
+    final url = Uri.parse('$baseUrl/usuarios/$idStr');
     try {
-      final response = await http.get(url, headers: await _getHeaders());
+      final headers = await _getHeaders();
+      print("📡 GET perfil: $url");
+      final response = await http.get(url, headers: headers);
+      print("📡 Status: ${response.statusCode} body: ${response.body.substring(0, response.body.length.clamp(0, 300))}");
       if (response.statusCode == 200) {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
         return UserProfile.fromJson(data);
@@ -100,11 +110,87 @@ class ApiService {
 
   static Future<String?> imageToBase64(String path) async {
     try {
-      final bytes = await File(path).readAsBytes();
+      final file = File(path);
+      if (!await file.exists()) {
+        print("Archivo no encontrado: $path");
+        return null;
+      }
+      final bytes = await file.readAsBytes();
+      print("imagen cargada: ${bytes.length} bytes");
       return base64Encode(bytes);
     } catch (e) {
       print("Error convirtiendo imagen: $e");
       return null;
+    }
+  }
+
+  // Convierte un XFile directamente (más fiable en Android)
+  static Future<String?> xFileToBase64(XFile file) async {
+    try {
+      final bytes = await file.readAsBytes();
+      print("imagen desde XFile: ${bytes.length} bytes");
+      return base64Encode(bytes);
+    } catch (e) {
+      print("Error xFileToBase64: $e");
+      return null;
+    }
+  }
+
+  static Future<Valoracion?> getValoracionPorCita(int citaId) async {
+    final url = Uri.parse('$baseUrl/valoraciones/cita/$citaId');
+    try {
+      final response = await http.get(url, headers: await _getHeaders());
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        return Valoracion.fromJson(data);
+      }
+    } catch (e) {
+      print("Excepción getValoracionPorCita: $e");
+    }
+    return null;
+  }
+
+  static Future<bool> crearValoracion(ValoracionRequest request) async {
+    final url = Uri.parse('$baseUrl/valoraciones');
+    try {
+      final body = jsonEncode(request.toJson());
+      print("📤 POST valoracion body: $body");
+      final response = await http.post(
+        url,
+        headers: await _getHeaders(),
+        body: body,
+      );
+      print("📥 crearValoracion status: ${response.statusCode} body: ${response.body}");
+      return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
+    } catch (e) {
+      print("Error crearValoracion: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> actualizarValoracion(int valoracionId, ValoracionRequest request) async {
+    final url = Uri.parse('$baseUrl/valoraciones/$valoracionId');
+    try {
+      final response = await http.put(
+        url,
+        headers: await _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print("Error actualizarValoracion: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> eliminarValoracion(int valoracionId) async {
+    final url = Uri.parse('$baseUrl/valoraciones/$valoracionId');
+    try {
+      final response = await http.delete(url, headers: await _getHeaders());
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print("Error eliminarValoracion: $e");
+      return false;
     }
   }
 }

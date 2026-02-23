@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../l10n/app_strings.dart';
 import 'signup_screen.dart';
 import 'main_nav_screen.dart';
 import 'password_recovery_screen.dart';
@@ -18,21 +19,21 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextField(
       controller: controller,
       obscureText: isPassword,
-      style: TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.white),
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white70),
+        labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide(color: Colors.white70),
+          borderSide: const BorderSide(color: Colors.white),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide(color: Colors.white),
+          borderSide: const BorderSide(color: Colors.white, width: 2.0),
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
+        fillColor: Colors.white.withOpacity(0.15),
       ),
     );
   }
@@ -63,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.content_cut, size: 100, color: Colors.white),
+                  Image.asset('assets/logo.png', height: 120),
                   const SizedBox(height: 20),
                   Text(
                     "PELUQUERÍA",
@@ -75,9 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  _buildTextField(_emailController, "Usuario/Email", Icons.person),
+                  _buildTextField(_emailController, AppStrings.watch(context, 'login_username'), Icons.person),
                   const SizedBox(height: 20),
-                  _buildTextField(_passwordController, "Contraseña", Icons.lock, isPassword: true),
+                  _buildTextField(_passwordController, AppStrings.watch(context, 'login_password'), Icons.lock, isPassword: true),
                   const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.centerRight,
@@ -85,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(context, MaterialPageRoute(builder: (_) => PasswordRecoveryScreen()));
                       },
-                      child: Text("¿Olvidaste tu contraseña?", style: TextStyle(color: Colors.white)),
+                      child: Text(AppStrings.watch(context, 'login_forgot'), style: TextStyle(color: Colors.white)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -117,15 +118,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   );
                                 } else {
-                                  _showError("Credenciales incorrectas");
+                                  _showError(AppStrings.get(context, 'login_wrong_creds'));
                                 }
                               } else {
-                                _showError("Rellena todos los campos");
+                                _showError(AppStrings.get(context, 'login_fill_fields'));
                               }
                             },
                       child: authProvider.isLoading
                           ? CircularProgressIndicator(color: Colors.orange)
-                          : const Text("ENTRAR", style: TextStyle(fontSize: 16)),
+                          : Text(AppStrings.watch(context, 'login_enter'), style: TextStyle(fontSize: 16)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -133,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
                     },
-                    child: Text("¿No tienes cuenta? Regístrate", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: Text(AppStrings.watch(context, 'login_no_account'), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

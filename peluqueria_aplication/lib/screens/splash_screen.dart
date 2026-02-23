@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.content_cut, size: 80, color: Colors.white),
+              Image.asset('assets/logo.png', height: 100),
               SizedBox(height: 20),
               Text("PELUQUERÍA APP",
                   style: TextStyle(
